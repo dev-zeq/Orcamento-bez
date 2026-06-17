@@ -814,19 +814,24 @@ async function salvarOrcamento({ name, city, phone, total, discount, pdfBlob }) 
     const valorStr   = total.toFixed(2).replace('.', ',');
     const descontoStr = discount > 0 ? fmt(discount) : '';
 
-    // Converter PDF blob → base64 e fazer upload
+    // Converter PDF blob → base64 em chunks (evita stack overflow em arquivos grandes)
     let pdfUrl = '';
     try {
         const arrayBuf = await pdfBlob.arrayBuffer();
-        const base64   = btoa(String.fromCharCode(...new Uint8Array(arrayBuf)));
-        const up = await fetch(UPLOAD_PDF_URL, {
+        const bytes    = new Uint8Array(arrayBuf);
+        let binary     = '';
+        for (let i = 0; i < bytes.length; i += 8192) {
+            binary += String.fromCharCode(...bytes.subarray(i, i + 8192));
+        }
+        const base64 = btoa(binary);
+        const up     = await fetch(UPLOAD_PDF_URL, {
             method:  'POST',
             headers: { 'Content-Type': 'application/json' },
             body:    JSON.stringify({ base64, nome: name }),
         });
         const upData = await up.json();
         pdfUrl = upData.url || '';
-    } catch {}
+    } catch (e) { console.error('upload-pdf:', e); }
 
     fetch(N8N_WEBHOOK, {
         method:  'POST',
