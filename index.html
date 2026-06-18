@@ -982,7 +982,7 @@ async function agBuscarCliente(nome) {
                 const safe = encodeURIComponent(JSON.stringify(c));
                 return `<div class="ag-dropdown-item" onclick="agSelecionarCliente('${safe}')">${c.nome}<small>${c.whatsapp} · ${c.cidade}</small></div>`;
             }).join('');
-            dd.style.display = '';
+            dd.style.display = 'block';
         } catch { dd.style.display = 'none'; }
     }, 350);
 }
