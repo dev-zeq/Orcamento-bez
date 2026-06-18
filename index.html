@@ -300,6 +300,7 @@
             </div>
             <div class="field"><label>Contato</label><input id="clientPhone" type="tel" placeholder="(47) 99999-9999"></div>
         </div>
+        <div class="field"><label>Endereço</label><input id="clientAddress" type="text" placeholder="Rua, número, bairro..."></div>
     </div>
 
     <div class="card">
@@ -623,9 +624,10 @@ function gerarPDF(enviar = false) {
     if (!items.length) return alert('Adicione pelo menos um serviço!');
 
     const { total, discount, subtotal } = calcTotals();
-    const name    = document.getElementById('clientName').value  || 'Cliente';
-    const city    = document.getElementById('clientCity').value  || 'Não informado';
-    const phone   = document.getElementById('clientPhone').value || 'Não informado';
+    const name    = document.getElementById('clientName').value    || 'Cliente';
+    const city    = document.getElementById('clientCity').value    || 'Não informado';
+    const phone   = document.getElementById('clientPhone').value   || 'Não informado';
+    const address = document.getElementById('clientAddress').value || '';
     const promoT  = document.getElementById('promoTitle').value;
     const promoD  = document.getElementById('promoDesc').value;
     const date    = new Date().toLocaleDateString('pt-BR');
@@ -738,6 +740,11 @@ function gerarPDF(enviar = false) {
                 bold(); size(6.5); color(C.muted); txt(label, lx, ly - 3);
                 normal(); size(10); color(C.text); txt(val, lx, ly);
             });
+            if (address) {
+                bold(); size(6.5); color(C.muted); txt('ENDEREÇO', 20, y + 28 - 3);
+                normal(); size(10); color(C.text); txt(address, 20, y + 28);
+                y += 11;
+            }
             y += 28;
 
             // ─── TABELA DE SERVIÇOS ───────────────────────
@@ -887,7 +894,7 @@ function gerarPDF(enviar = false) {
             document.body.removeChild(a);
             setTimeout(() => URL.revokeObjectURL(blobUrl), 3000);
 
-            if (enviar) salvarOrcamento({ name, city, phone, total, discount, pdfBlob });
+            if (enviar) salvarOrcamento({ name, city, phone, address, total, discount, pdfBlob });
 
         } catch(err) {
             alert('Erro: ' + err.message);
@@ -900,7 +907,7 @@ function gerarPDF(enviar = false) {
 const N8N_WEBHOOK   = 'https://flow.ezstudio.com.br/webhook/24bce108-ac23-4ea4-a62c-441d4c31c834';
 const UPLOAD_PDF_URL = 'https://blackout.ezstudio.com.br/upload-pdf';
 
-async function salvarOrcamento({ name, city, phone, total, discount, pdfBlob }) {
+async function salvarOrcamento({ name, city, phone, address, total, discount, pdfBlob }) {
     const itensStr   = items.map(it => `• ${it.name} x${it.qty} — ${fmt(it.qty * it.price)}`).join('\n');
     const whatsapp   = phone.replace(/\D/g, '').replace(/^55/, '');
     const valorStr   = total.toFixed(2).replace('.', ',');
@@ -932,6 +939,7 @@ async function salvarOrcamento({ name, city, phone, total, discount, pdfBlob }) 
             nome:        name,
             whatsapp:    whatsapp,
             cidade:      city,
+            endereco:    address,
             itens:       itensStr,
             valor:       valorStr,
             condicao:    '',
@@ -992,6 +1000,7 @@ function agSelecionarCliente(enc) {
     document.getElementById('agNome').value     = c.nome;
     document.getElementById('agWhatsapp').value = c.whatsapp;
     document.getElementById('agCidade').value   = c.cidade;
+    document.getElementById('agEndereco').value = c.endereco || '';
     document.getElementById('agDropdown').style.display = 'none';
 }
 
