@@ -260,6 +260,7 @@
         .cal-day:hover:not(.cal-disabled):not(.cal-empty) { border-color:var(--cyan); }
         .cal-day.cal-empty { background:transparent; cursor:default; }
         .cal-day.cal-past,.cal-day.cal-disabled { opacity:0.3; cursor:not-allowed; }
+        .cal-day.cal-tem { background:rgba(6,182,212,0.12); color:var(--cyan); }
         .cal-day.cal-full { background:rgba(220,50,50,0.2); color:#f87171; }
         .cal-day.cal-quase { background:rgba(234,179,8,0.2); color:#fbbf24; }
         .cal-day.cal-selected { background:var(--cyan) !important; color:#fff !important; border-color:var(--teal) !important; }
@@ -269,8 +270,9 @@
         .legend-dot { width:10px; height:10px; border-radius:3px; }
         .time-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; margin-top:8px; }
         .time-slot { padding:8px 4px; text-align:center; background:var(--input-bg); border:1.5px solid var(--border); border-radius:8px; font-size:13px; cursor:pointer; transition:all 0.15s; color:var(--text); }
-        .time-slot:hover { border-color:var(--cyan); }
+        .time-slot:hover:not(.ts-ocupado) { border-color:var(--cyan); }
         .time-slot.ts-selected { background:var(--cyan); color:#fff; border-color:var(--teal); }
+        .time-slot.ts-ocupado { background:rgba(220,50,50,0.12); color:#f87171; border-color:rgba(220,50,50,0.25); cursor:not-allowed; }
     </style>
 </head>
 <body>
@@ -1045,6 +1047,7 @@ async function agRenderCal() {
         let cls = 'cal-day';
         if (past || full) cls += past ? ' cal-past' : ' cal-full cal-disabled';
         else if (count === AG_MAX_DIA - 1) cls += ' cal-quase';
+        else if (count > 0) cls += ' cal-tem';
         if (dt.getTime() === hoje.getTime()) cls += ' cal-today';
         if (isSel) cls += ' cal-selected';
 
@@ -1054,17 +1057,30 @@ async function agRenderCal() {
     grid.innerHTML = html;
 }
 
-function agSelecionarDia(ano, mes, dia) {
+async function agSelecionarDia(ano, mes, dia) {
     agData = new Date(ano, mes, dia);
     agHora = null;
-    document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('ts-selected'));
     const dd = String(dia).padStart(2,'0'), mm = String(mes+1).padStart(2,'0');
+    const dataISO = `${ano}-${mm}-${dd}`;
     document.getElementById('agDataLabel').textContent = `${dd}/${mm}/${ano}`;
-    document.getElementById('cardHorario').style.display = '';
+    document.getElementById('cardHorario').style.display = 'block';
+
+    document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('ts-selected', 'ts-ocupado'));
+
+    try {
+        const r = await fetch(`${SHEETS_URL}?action=agendamentos&data=${dataISO}`);
+        const ags = await r.json();
+        const ocupados = ags.map(a => String(a.horario || '').trim());
+        document.querySelectorAll('.time-slot').forEach(s => {
+            if (ocupados.includes(s.textContent.trim())) s.classList.add('ts-ocupado');
+        });
+    } catch {}
+
     agRenderCal();
 }
 
 function agSelecionarHorario(el, hora) {
+    if (el.classList.contains('ts-ocupado')) return;
     document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('ts-selected'));
     el.classList.add('ts-selected');
     agHora = hora;
