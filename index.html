@@ -1105,6 +1105,23 @@ async function agConfirmar() {
     const dataISO       = `${ano}-${mes}-${dia}`;
     const dataFormatada = `${dia}/${mes}/${ano}`;
 
+    try {
+        const rv = await fetch(`${SHEETS_URL}?action=agendamentos&data=${dataISO}`);
+        const ags = await rv.json();
+        const ocupados = ags.map(a => String(a.horario || '').trim());
+        if (ocupados.includes(agHora)) {
+            alert(`O horário ${agHora} já foi reservado. Por favor, escolha outro.`);
+            document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('ts-selected', 'ts-ocupado'));
+            ocupados.forEach(h => {
+                document.querySelectorAll('.time-slot').forEach(s => {
+                    if (s.textContent.trim() === h) s.classList.add('ts-ocupado');
+                });
+            });
+            agHora = null;
+            return;
+        }
+    } catch {}
+
     document.getElementById('overlay').classList.add('show');
     document.querySelector('#overlay .msg').innerHTML = '📅 Agendando...<span>Salvando e enviando confirmação</span>';
 

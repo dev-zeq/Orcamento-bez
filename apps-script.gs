@@ -86,6 +86,18 @@ function doPost(e) {
     if (!sheet) {
       sheet = ss.insertSheet("Agendamentos");
       sheet.appendRow(["data", "horario", "nome", "whatsapp", "cidade", "endereco", "observacoes", "status"]);
+    } else if (sheet.getLastRow() > 1) {
+      const rows = sheet.getDataRange().getValues();
+      const headers = rows.shift();
+      const dIdx = headers.indexOf('data');
+      const hIdx = headers.indexOf('horario');
+      const sIdx = headers.indexOf('status');
+      const taken = rows.some(row =>
+        String(row[dIdx]).slice(0, 10) === String(data.data) &&
+        String(row[hIdx]).trim() === String(data.horario).trim() &&
+        String(row[sIdx]) !== 'Cancelado'
+      );
+      if (taken) return json({ ok: false, erro: 'Horário já reservado' });
     }
     sheet.appendRow([
       data.data || '',
