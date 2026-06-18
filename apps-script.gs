@@ -122,7 +122,9 @@ function doPost(e) {
         data.endereco   ? `Endereço: ${data.endereco}`     : '',
         data.observacoes ? `Obs: ${data.observacoes}`      : ''
       ].filter(Boolean).join('\n');
-      CalendarApp.getDefaultCalendar().createEvent(
+      const cals = CalendarApp.getCalendarsByName('Agenda Bez Clean');
+      const cal  = cals.length ? cals[0] : CalendarApp.getDefaultCalendar();
+      cal.createEvent(
         `🧽 ${data.nome} — Bez Clean`,
         inicio, fim,
         { description: desc, location: data.endereco || '' }
