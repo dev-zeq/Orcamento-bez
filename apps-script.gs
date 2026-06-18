@@ -50,7 +50,7 @@ function doGet(e) {
       const statusIdx = headers.indexOf('status');
       rows.forEach(row => {
         if (String(row[statusIdx] || '') === 'Cancelado') return;
-        const d = new Date(row[dataIdx]);
+        const d = row[dataIdx] instanceof Date ? row[dataIdx] : new Date(row[dataIdx]);
         if (!isNaN(d) && d.getMonth() + 1 === mes && d.getFullYear() === ano) {
           counts[d.getDate()] = (counts[d.getDate()] || 0) + 1;
         }
@@ -68,7 +68,12 @@ function doGet(e) {
     const dataIdx = headers.indexOf('data');
     const statusIdx = headers.indexOf('status');
     const results = rows
-      .filter(row => String(row[dataIdx]).slice(0, 10) === data && String(row[statusIdx] || '') !== 'Cancelado')
+      .filter(row => {
+        const d = row[dataIdx] instanceof Date
+          ? Utilities.formatDate(row[dataIdx], Session.getScriptTimeZone(), 'yyyy-MM-dd')
+          : String(row[dataIdx]).slice(0, 10);
+        return d === data && String(row[statusIdx] || '') !== 'Cancelado';
+      })
       .map(row => { const obj = {}; headers.forEach((h, i) => obj[h] = row[i]); return obj; });
     return json(results);
   }
@@ -92,11 +97,14 @@ function doPost(e) {
       const dIdx = headers.indexOf('data');
       const hIdx = headers.indexOf('horario');
       const sIdx = headers.indexOf('status');
-      const taken = rows.some(row =>
-        String(row[dIdx]).slice(0, 10) === String(data.data) &&
-        String(row[hIdx]).trim() === String(data.horario).trim() &&
-        String(row[sIdx]) !== 'Cancelado'
-      );
+      const taken = rows.some(row => {
+        const d = row[dIdx] instanceof Date
+          ? Utilities.formatDate(row[dIdx], Session.getScriptTimeZone(), 'yyyy-MM-dd')
+          : String(row[dIdx]).slice(0, 10);
+        return d === String(data.data) &&
+          String(row[hIdx]).trim() === String(data.horario).trim() &&
+          String(row[sIdx]) !== 'Cancelado';
+      });
       if (taken) return json({ ok: false, erro: 'Horário já reservado' });
     }
     sheet.appendRow([
@@ -175,7 +183,10 @@ function enviarLembretes() {
   const sIdx  = headers.indexOf('status');
 
   rows.forEach(row => {
-    const dataStr = String(row[dIdx]).slice(0, 10);
+    const rawData = row[dIdx];
+    const dataStr = rawData instanceof Date
+      ? Utilities.formatDate(rawData, Session.getScriptTimeZone(), 'yyyy-MM-dd')
+      : String(rawData).slice(0, 10);
     const status  = String(row[sIdx] || '');
     if (dataStr !== amanhaStr || status === 'Cancelado') return;
 
