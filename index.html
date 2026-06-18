@@ -960,8 +960,8 @@ let agHora = null;
 
 function switchTab(tab) {
     const isAg = tab === 'ag';
-    document.getElementById('sectionOrcamento').style.display = isAg ? 'none' : '';
-    document.getElementById('sectionAgenda').style.display    = isAg ? ''     : 'none';
+    document.getElementById('sectionOrcamento').style.display = isAg ? 'none'  : 'block';
+    document.getElementById('sectionAgenda').style.display    = isAg ? 'block' : 'none';
     document.getElementById('tabOrc').classList.toggle('active', !isAg);
     document.getElementById('tabAg').classList.toggle('active',  isAg);
     if (isAg) agRenderCal();
