@@ -831,10 +831,8 @@ async function salvarOrcamento({ name, city, phone, total, discount, pdfBlob }) 
         });
         const upData = await up.json();
         pdfUrl = upData.url || '';
-        console.log('✅ upload OK, pdfUrl:', pdfUrl);
-    } catch (e) { console.error('❌ upload-pdf erro:', e); }
+    } catch (e) { console.error('upload-pdf:', e); }
 
-    console.log('📤 enviando para n8n, pdfUrl:', pdfUrl || '(vazio)');
     fetch(N8N_WEBHOOK, {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
