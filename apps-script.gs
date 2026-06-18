@@ -156,6 +156,62 @@ function doPost(e) {
   return json({ ok: true });
 }
 
+function enviarLembretes() {
+  const ss    = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName("Agendamentos");
+  if (!sheet || sheet.getLastRow() < 2) return;
+
+  const amanha = new Date();
+  amanha.setDate(amanha.getDate() + 1);
+  const amanhaStr = Utilities.formatDate(amanha, Session.getScriptTimeZone(), 'yyyy-MM-dd');
+
+  const rows    = sheet.getDataRange().getValues();
+  const headers = rows.shift();
+  const dIdx  = headers.indexOf('data');
+  const hIdx  = headers.indexOf('horario');
+  const nIdx  = headers.indexOf('nome');
+  const wIdx  = headers.indexOf('whatsapp');
+  const eIdx  = headers.indexOf('endereco');
+  const sIdx  = headers.indexOf('status');
+
+  rows.forEach(row => {
+    const dataStr = String(row[dIdx]).slice(0, 10);
+    const status  = String(row[sIdx] || '');
+    if (dataStr !== amanhaStr || status === 'Cancelado') return;
+
+    const nome    = row[nIdx] || '';
+    const wpp     = '55' + String(row[wIdx] || '').replace(/\D/g, '').replace(/^55/, '');
+    const horario = row[hIdx] || '';
+    const endereco = row[eIdx] || '';
+
+    const texto = `Olá, ${nome}! 👋\n\nPassando para lembrar que *amanhã* você tem um serviço agendado com a *Bez Clean* 🧽\n\n🕐 Horário: *${horario}*${endereco ? `\n📍 Local: ${endereco}` : ''}\n\nQualquer dúvida é só chamar! 😊`;
+
+    UrlFetchApp.fetch('https://evo.ezstudio.com.br/send/text', {
+      method: 'post',
+      contentType: 'application/json',
+      headers: { 'apikey': '3906814c69adeaccda3d394a87fe0b49' },
+      payload: JSON.stringify({ number: wpp, text: texto }),
+      muteHttpExceptions: true
+    });
+
+    Logger.log('Lembrete enviado para ' + nome + ' (' + wpp + ')');
+  });
+}
+
+function criarTriggerLembrete() {
+  ScriptApp.getProjectTriggers()
+    .filter(t => t.getHandlerFunction() === 'enviarLembretes')
+    .forEach(t => ScriptApp.deleteTrigger(t));
+
+  ScriptApp.newTrigger('enviarLembretes')
+    .timeBased()
+    .everyDays(1)
+    .atHour(8)
+    .create();
+
+  Logger.log('Trigger criado: enviarLembretes todo dia às 8h');
+}
+
 function json(data) {
   return ContentService
     .createTextOutput(JSON.stringify(data))
