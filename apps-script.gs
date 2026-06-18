@@ -109,6 +109,26 @@ function doPost(e) {
       data.observacoes || '',
       'Agendado'
     ]);
+
+    try {
+      const [ano, mes, dia] = (data.data || '').split('-').map(Number);
+      const [hora, min]     = (data.horario || '00:00').split(':').map(Number);
+      const inicio = new Date(ano, mes - 1, dia, hora, min, 0);
+      const fim    = new Date(inicio.getTime() + 2 * 60 * 60 * 1000);
+      const desc   = [
+        `Cliente: ${data.nome || ''}`,
+        `WhatsApp: ${data.whatsapp || ''}`,
+        `Cidade: ${data.cidade || ''}`,
+        data.endereco   ? `Endereço: ${data.endereco}`     : '',
+        data.observacoes ? `Obs: ${data.observacoes}`      : ''
+      ].filter(Boolean).join('\n');
+      CalendarApp.getDefaultCalendar().createEvent(
+        `🧽 ${data.nome} — Bez Clean`,
+        inicio, fim,
+        { description: desc, location: data.endereco || '' }
+      );
+    } catch(e) { Logger.log('Calendar error: ' + e); }
+
     return json({ ok: true });
   }
 
