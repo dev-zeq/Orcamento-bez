@@ -239,6 +239,38 @@
         .city-dropdown li:last-child { border-bottom: none; }
         .city-dropdown li:hover { background: rgba(34,181,208,0.12); }
         .city-dropdown li mark { background: transparent; color: var(--cyan); font-weight: 700; }
+
+        /* ---- Tab Nav ---- */
+        .tab-nav { display:flex; margin:12px 12px 0; background:var(--card-bg); border-radius:12px; padding:4px; gap:4px; border:1px solid rgba(255,255,255,0.05); }
+        .tab-btn { flex:1; padding:10px; border:none; border-radius:8px; background:transparent; color:var(--muted); font-size:13px; font-weight:600; cursor:pointer; transition:all 0.2s; }
+        .tab-btn.active { background:var(--cyan); color:#fff; }
+        #sectionAgenda { display:none; }
+        .ag-search-wrap { position:relative; }
+        .ag-dropdown { position:absolute; top:100%; left:0; right:0; background:var(--mid); border:1.5px solid var(--border); border-radius:8px; z-index:50; overflow:hidden; margin-top:4px; display:none; }
+        .ag-dropdown-item { padding:10px 12px; cursor:pointer; font-size:14px; border-bottom:1px solid var(--border); }
+        .ag-dropdown-item:last-child { border-bottom:none; }
+        .ag-dropdown-item:hover { background:var(--border); }
+        .ag-dropdown-item small { display:block; font-size:11px; color:var(--muted); margin-top:2px; }
+        .cal-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+        .cal-header span { font-size:15px; font-weight:700; }
+        .cal-nav { background:var(--input-bg); border:1px solid var(--border); color:var(--text); border-radius:6px; width:32px; height:32px; cursor:pointer; font-size:18px; display:flex; align-items:center; justify-content:center; }
+        .cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }
+        .cal-day-label { text-align:center; font-size:10px; font-weight:700; color:var(--muted); padding:4px 0; text-transform:uppercase; }
+        .cal-day { aspect-ratio:1; display:flex; align-items:center; justify-content:center; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; border:1.5px solid transparent; transition:all 0.15s; background:var(--input-bg); color:var(--text); }
+        .cal-day:hover:not(.cal-disabled):not(.cal-empty) { border-color:var(--cyan); }
+        .cal-day.cal-empty { background:transparent; cursor:default; }
+        .cal-day.cal-past,.cal-day.cal-disabled { opacity:0.3; cursor:not-allowed; }
+        .cal-day.cal-full { background:rgba(220,50,50,0.2); color:#f87171; }
+        .cal-day.cal-quase { background:rgba(234,179,8,0.2); color:#fbbf24; }
+        .cal-day.cal-selected { background:var(--cyan) !important; color:#fff !important; border-color:var(--teal) !important; }
+        .cal-day.cal-today { border-color:var(--muted); }
+        .legend { display:flex; gap:10px; margin-top:8px; flex-wrap:wrap; }
+        .legend-item { display:flex; align-items:center; gap:5px; font-size:11px; color:var(--muted); }
+        .legend-dot { width:10px; height:10px; border-radius:3px; }
+        .time-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; margin-top:8px; }
+        .time-slot { padding:8px 4px; text-align:center; background:var(--input-bg); border:1.5px solid var(--border); border-radius:8px; font-size:13px; cursor:pointer; transition:all 0.15s; color:var(--text); }
+        .time-slot:hover { border-color:var(--cyan); }
+        .time-slot.ts-selected { background:var(--cyan); color:#fff; border-color:var(--teal); }
     </style>
 </head>
 <body>
@@ -251,6 +283,12 @@
         </div>
     </div>
 
+    <div class="tab-nav">
+        <button class="tab-btn active" id="tabOrc" onclick="switchTab('orc')">📄 Orçamento</button>
+        <button class="tab-btn" id="tabAg" onclick="switchTab('ag')">📅 Agenda</button>
+    </div>
+
+    <div id="sectionOrcamento">
     <div class="card">
         <div class="card-title">Cliente</div>
         <div class="field"><label>Nome</label><input id="clientName" type="text" placeholder="Ex: João Silva"></div>
@@ -320,6 +358,60 @@
         <button class="btn-generate" onclick="gerarPDF(false)">📄 Só PDF</button>
         <button class="btn-generate primary" onclick="gerarPDF(true)">📤 PDF + Enviar</button>
     </div>
+    </div><!-- /sectionOrcamento -->
+
+    <div id="sectionAgenda">
+        <div class="card" style="margin-top:12px">
+            <div class="card-title">Buscar Cliente</div>
+            <div class="field ag-search-wrap">
+                <label>Nome do Cliente</label>
+                <input id="agNome" type="text" placeholder="Digite o nome..." autocomplete="off" oninput="agBuscarCliente(this.value)">
+                <div class="ag-dropdown" id="agDropdown"></div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                <div class="field"><label>WhatsApp</label><input id="agWhatsapp" type="tel" placeholder="(47) 99999-9999"></div>
+                <div class="field"><label>Cidade</label><input id="agCidade" type="text" placeholder="Cidade"></div>
+            </div>
+            <div class="field"><label>Endereço</label><input id="agEndereco" type="text" placeholder="Rua, número, bairro..."></div>
+        </div>
+
+        <div class="card" style="margin-top:8px">
+            <div class="cal-header">
+                <button class="cal-nav" onclick="agMudaMes(-1)">‹</button>
+                <span id="calTitulo"></span>
+                <button class="cal-nav" onclick="agMudaMes(1)">›</button>
+            </div>
+            <div class="cal-grid" id="calGrid"></div>
+            <div class="legend">
+                <div class="legend-item"><div class="legend-dot" style="background:var(--input-bg);border:1px solid var(--border)"></div> Disponível</div>
+                <div class="legend-item"><div class="legend-dot" style="background:rgba(234,179,8,0.3)"></div> 1 vaga</div>
+                <div class="legend-item"><div class="legend-dot" style="background:rgba(220,50,50,0.2)"></div> Lotado</div>
+            </div>
+        </div>
+
+        <div class="card" id="cardHorario" style="margin-top:8px;display:none">
+            <div class="card-title">Horário — <span id="agDataLabel"></span></div>
+            <div class="time-grid">
+                <div class="time-slot" onclick="agSelecionarHorario(this,'08:00')">08:00</div>
+                <div class="time-slot" onclick="agSelecionarHorario(this,'09:00')">09:00</div>
+                <div class="time-slot" onclick="agSelecionarHorario(this,'10:00')">10:00</div>
+                <div class="time-slot" onclick="agSelecionarHorario(this,'11:00')">11:00</div>
+                <div class="time-slot" onclick="agSelecionarHorario(this,'13:00')">13:00</div>
+                <div class="time-slot" onclick="agSelecionarHorario(this,'14:00')">14:00</div>
+                <div class="time-slot" onclick="agSelecionarHorario(this,'15:00')">15:00</div>
+                <div class="time-slot" onclick="agSelecionarHorario(this,'16:00')">16:00</div>
+            </div>
+        </div>
+
+        <div class="card" style="margin-top:8px">
+            <div class="field"><label>Observações (opcional)</label><input id="agObs" type="text" placeholder="Ex: portão azul, ligar antes..."></div>
+        </div>
+
+        <div class="btn-row">
+            <button class="btn-generate primary" onclick="agConfirmar()" style="width:100%">📅 Confirmar Agendamento</button>
+        </div>
+    </div><!-- /sectionAgenda -->
+
 </div>
 
 <div id="overlay">
@@ -853,6 +945,162 @@ async function salvarOrcamento({ name, city, phone, total, discount, pdfBlob }) 
 document.addEventListener('keypress', e => {
     if (e.key === 'Enter' && ['itemPrice','customItem'].includes(e.target.id)) addItem();
 });
+
+// =====================================================================
+// AGENDA
+// =====================================================================
+const N8N_AGENDAR = 'https://flow.ezstudio.com.br/webhook/agendar-bezclean';
+const AG_MAX_DIA  = 3;
+
+let agAno  = new Date().getFullYear();
+let agMes  = new Date().getMonth() + 1;
+let agDisp = {};
+let agData = null;
+let agHora = null;
+
+function switchTab(tab) {
+    const isAg = tab === 'ag';
+    document.getElementById('sectionOrcamento').style.display = isAg ? 'none' : '';
+    document.getElementById('sectionAgenda').style.display    = isAg ? ''     : 'none';
+    document.getElementById('tabOrc').classList.toggle('active', !isAg);
+    document.getElementById('tabAg').classList.toggle('active',  isAg);
+    if (isAg) agRenderCal();
+}
+
+// ---- Busca de cliente ----
+let agBuscaTimer = null;
+async function agBuscarCliente(nome) {
+    clearTimeout(agBuscaTimer);
+    const dd = document.getElementById('agDropdown');
+    if (nome.length < 2) { dd.style.display = 'none'; return; }
+    agBuscaTimer = setTimeout(async () => {
+        try {
+            const r = await fetch(`${SHEETS_URL}?action=buscar&nome=${encodeURIComponent(nome)}`);
+            const data = await r.json();
+            if (!Array.isArray(data) || !data.length) { dd.style.display = 'none'; return; }
+            dd.innerHTML = data.slice(0,5).map(c => {
+                const safe = encodeURIComponent(JSON.stringify(c));
+                return `<div class="ag-dropdown-item" onclick="agSelecionarCliente('${safe}')">${c.nome}<small>${c.whatsapp} · ${c.cidade}</small></div>`;
+            }).join('');
+            dd.style.display = '';
+        } catch { dd.style.display = 'none'; }
+    }, 350);
+}
+
+function agSelecionarCliente(enc) {
+    const c = JSON.parse(decodeURIComponent(enc));
+    document.getElementById('agNome').value     = c.nome;
+    document.getElementById('agWhatsapp').value = c.whatsapp;
+    document.getElementById('agCidade').value   = c.cidade;
+    document.getElementById('agDropdown').style.display = 'none';
+}
+
+document.addEventListener('click', e => {
+    if (!e.target.closest('.ag-search-wrap'))
+        document.getElementById('agDropdown').style.display = 'none';
+});
+
+// ---- Calendário ----
+const AG_MESES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+const AG_DSEM  = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+
+function agMudaMes(dir) {
+    agMes += dir;
+    if (agMes > 12) { agMes = 1; agAno++; }
+    if (agMes < 1)  { agMes = 12; agAno--; }
+    agRenderCal();
+}
+
+async function agRenderCal() {
+    document.getElementById('calTitulo').textContent = `${AG_MESES[agMes-1]} ${agAno}`;
+    try {
+        const r = await fetch(`${SHEETS_URL}?action=disponivel&mes=${agMes}&ano=${agAno}`);
+        agDisp = await r.json();
+    } catch { agDisp = {}; }
+
+    const grid  = document.getElementById('calGrid');
+    const hoje  = new Date(); hoje.setHours(0,0,0,0);
+    const prim  = new Date(agAno, agMes-1, 1).getDay();
+    const total = new Date(agAno, agMes, 0).getDate();
+
+    let html = AG_DSEM.map(d => `<div class="cal-day-label">${d}</div>`).join('');
+    for (let i = 0; i < prim; i++) html += '<div class="cal-day cal-empty"></div>';
+
+    for (let d = 1; d <= total; d++) {
+        const dt    = new Date(agAno, agMes-1, d);
+        const count = agDisp[d] || 0;
+        const past  = dt < hoje;
+        const full  = count >= AG_MAX_DIA;
+        const isSel = agData && agData.getTime() === dt.getTime();
+
+        let cls = 'cal-day';
+        if (past || full) cls += past ? ' cal-past' : ' cal-full cal-disabled';
+        else if (count === AG_MAX_DIA - 1) cls += ' cal-quase';
+        if (dt.getTime() === hoje.getTime()) cls += ' cal-today';
+        if (isSel) cls += ' cal-selected';
+
+        const click = (!past && !full) ? `onclick="agSelecionarDia(${agAno},${agMes-1},${d})"` : '';
+        html += `<div class="${cls}" ${click}>${d}</div>`;
+    }
+    grid.innerHTML = html;
+}
+
+function agSelecionarDia(ano, mes, dia) {
+    agData = new Date(ano, mes, dia);
+    agHora = null;
+    document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('ts-selected'));
+    const dd = String(dia).padStart(2,'0'), mm = String(mes+1).padStart(2,'0');
+    document.getElementById('agDataLabel').textContent = `${dd}/${mm}/${ano}`;
+    document.getElementById('cardHorario').style.display = '';
+    agRenderCal();
+}
+
+function agSelecionarHorario(el, hora) {
+    document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('ts-selected'));
+    el.classList.add('ts-selected');
+    agHora = hora;
+}
+
+// ---- Confirmar ----
+async function agConfirmar() {
+    const nome     = document.getElementById('agNome').value.trim();
+    const whatsapp = document.getElementById('agWhatsapp').value.replace(/\D/g,'').replace(/^55/,'');
+    const cidade   = document.getElementById('agCidade').value.trim();
+    const endereco = document.getElementById('agEndereco').value.trim();
+    const obs      = document.getElementById('agObs').value.trim();
+
+    if (!nome)     return alert('Informe o nome do cliente.');
+    if (!whatsapp) return alert('Informe o WhatsApp.');
+    if (!agData)   return alert('Selecione uma data no calendário.');
+    if (!agHora)   return alert('Selecione um horário.');
+
+    const ano = agData.getFullYear();
+    const mes = String(agData.getMonth()+1).padStart(2,'0');
+    const dia = String(agData.getDate()).padStart(2,'0');
+    const dataISO       = `${ano}-${mes}-${dia}`;
+    const dataFormatada = `${dia}/${mes}/${ano}`;
+
+    document.getElementById('overlay').classList.add('show');
+    document.querySelector('#overlay .msg').innerHTML = '📅 Agendando...<span>Salvando e enviando confirmação</span>';
+
+    try {
+        await fetch(N8N_AGENDAR, {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify({ nome, whatsapp, cidade, endereco, observacoes: obs, data: dataISO, horario: agHora, dataFormatada })
+        });
+        agData = null; agHora = null;
+        document.getElementById('agObs').value = '';
+        document.getElementById('cardHorario').style.display = 'none';
+        agRenderCal();
+        document.getElementById('overlay').classList.remove('show');
+        document.querySelector('#overlay .msg').innerHTML = '⏳ Gerando PDF...<span>Aguarde um momento</span>';
+        alert(`✅ Agendado! Confirmação enviada para ${nome} no WhatsApp.`);
+    } catch(err) {
+        document.getElementById('overlay').classList.remove('show');
+        alert('Erro ao agendar: ' + err.message);
+    }
+}
 </script>
 </body>
 </html>
