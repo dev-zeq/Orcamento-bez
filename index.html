@@ -406,35 +406,26 @@
 
         /* ===== AGENDA ===== */
         #sectionAgenda { display: none; }
-        #sectionFaq { display: none; }
 
-        /* ===== FAQ ===== */
-        .faq-intro { font-size: 12.5px; color: var(--muted); margin-bottom: 16px; line-height: 1.5; }
-        .faq-item {
+
             border: 1px solid var(--border);
             border-radius: 11px; margin-bottom: 9px;
             background: var(--surface-2);
             cursor: pointer; overflow: hidden;
             transition: border-color 0.2s ease;
         }
-        .faq-item.open { border-color: var(--cyan); }
-        .faq-q {
             display: flex; align-items: center; justify-content: space-between;
             gap: 12px; padding: 14px 16px;
             font-size: 13.5px; font-weight: 600; color: var(--text);
         }
-        .faq-ic {
             font-size: 20px; font-weight: 400; color: var(--cyan);
             flex-shrink: 0; transition: transform 0.25s ease; line-height: 1;
         }
-        .faq-item.open .faq-ic { transform: rotate(45deg); }
-        .faq-a {
             max-height: 0; opacity: 0;
             padding: 0 16px;
             font-size: 13px; color: var(--text-soft); line-height: 1.6;
             transition: max-height 0.3s ease, opacity 0.25s ease, padding 0.3s ease;
         }
-        .faq-item.open .faq-a {
             max-height: 320px; opacity: 1;
             padding: 0 16px 15px 16px;
         }
@@ -667,37 +658,6 @@
         </div>
     </div><!-- /sectionAgenda -->
 
-    <div id="sectionFaq">
-        <div class="card">
-            <div class="card-title">Dúvidas Frequentes</div>
-            <p class="faq-intro">Respostas rápidas para passar ao cliente durante o atendimento. Toque para abrir.</p>
-
-            <div class="faq-item" onclick="toggleFaq(this)">
-                <div class="faq-q"><span>Quanto tempo demora para secar?</span><span class="faq-ic">+</span></div>
-                <div class="faq-a">Graças ao sistema de extração de alta potência, o estofado fica apenas levemente úmido. A secagem completa varia entre 4 e 12 horas, dependendo do tipo de tecido e da ventilação do ambiente.</div>
-            </div>
-
-            <div class="faq-item" onclick="toggleFaq(this)">
-                <div class="faq-q"><span>Os produtos são seguros para pets e crianças?</span><span class="faq-ic">+</span></div>
-                <div class="faq-a">Sim, absolutamente. Usamos apenas produtos profissionais certificados, biodegradáveis e dermatologicamente testados — totalmente seguros para crianças e animais de estimação.</div>
-            </div>
-
-            <div class="faq-item" onclick="toggleFaq(this)">
-                <div class="faq-q"><span>Removem qualquer tipo de mancha e odor?</span><span class="faq-ic">+</span></div>
-                <div class="faq-a">Removemos com sucesso até 90% das manchas comuns (café, suco, sujeira do dia a dia) e 100% dos odores biológicos (urina de pet, mofo). Manchas de queimadura, tintura de cabelo ou desgaste do próprio tecido não podem ser revertidas.</div>
-            </div>
-
-            <div class="faq-item" onclick="toggleFaq(this)">
-                <div class="faq-q"><span>Quais cidades vocês atendem?</span><span class="faq-ic">+</span></div>
-                <div class="faq-a">Atendemos Balneário Camboriú, Itajaí, Camboriú, Itapema, Navegantes, Porto Belo e Piçarras sem taxa de deslocamento. Outras cidades próximas podem ser avaliadas sob consulta.</div>
-            </div>
-
-            <div class="faq-item" onclick="toggleFaq(this)">
-                <div class="faq-q"><span>Quais são as formas de pagamento?</span><span class="faq-ic">+</span></div>
-                <div class="faq-a">PIX, dinheiro e cartões de crédito com parcelamento. O pagamento é feito apenas após a finalização e conferência do serviço.</div>
-            </div>
-        </div>
-    </div><!-- /sectionFaq -->
 
 </div>
 
@@ -1277,16 +1237,10 @@ let agHora = null;
 function switchTab(tab) {
     document.getElementById('sectionOrcamento').style.display = (tab === 'orc') ? 'block' : 'none';
     document.getElementById('sectionAgenda').style.display    = (tab === 'ag')  ? 'block' : 'none';
-    document.getElementById('sectionFaq').style.display       = (tab === 'faq') ? 'block' : 'none';
     document.getElementById('tabOrc').classList.toggle('active', tab === 'orc');
     document.getElementById('tabAg').classList.toggle('active',  tab === 'ag');
-    document.getElementById('tabFaq').classList.toggle('active', tab === 'faq');
     if (tab === 'ag') agRenderCal();
 }
-
-// ---- FAQ accordion ----
-function toggleFaq(el) {
-    el.classList.toggle('open');
 }
 
 // ---- Busca de cliente ----
