@@ -1020,12 +1020,19 @@ function lockGrantAccess() {
     setTimeout(() => ls.classList.add('hidden'), 360);
 }
 
-function lockReset() {
-    if (!confirm('Isso vai redefinir a senha para a padrão e apagar a biometria. Continuar?')) return;
+async function lockReset() {
     localStorage.removeItem('bezPassHash');
     localStorage.removeItem('bezCredId');
     sessionStorage.removeItem('bezAuth');
-    location.reload();
+    const defaultHash = 'e0c8bc414960c21643bb13f9f6d9cb2b65db20e3d6972274425356d70eef4fd5';
+    try {
+        localStorage.setItem('bezPassHash', await _lockHash('520121'));
+    } catch(e) {
+        localStorage.setItem('bezPassHash', defaultHash);
+    }
+    document.getElementById('lockAuthPass').value = '';
+    document.getElementById('lockAuthErr').textContent = 'Senha redefinida para 520121';
+    document.getElementById('lockAuthPass').focus();
 }
 /* ===== FIM AUTENTICAÇÃO ===== */
 
