@@ -102,7 +102,7 @@ function doPost(e) {
     let sheet = ss.getSheetByName("Agendamentos");
     if (!sheet) {
       sheet = ss.insertSheet("Agendamentos");
-      sheet.appendRow(["data", "horario", "nome", "whatsapp", "cidade", "endereco", "observacoes", "status"]);
+      sheet.appendRow(["data", "horario", "nome", "whatsapp", "cidade", "endereco", "observacoes", "servico", "valor", "status"]);
     } else if (sheet.getLastRow() > 1) {
       const rows = sheet.getDataRange().getValues();
       const headers = rows.shift();
@@ -127,6 +127,8 @@ function doPost(e) {
       data.cidade || '',
       data.endereco || '',
       data.observacoes || '',
+      data.servico || '',
+      parseFloat(data.valor) || 0,
       'Agendado'
     ]);
 
@@ -250,6 +252,57 @@ function criarTriggerLembrete() {
     .create();
 
   Logger.log('Trigger criado: enviarLembretes todo dia às 8h');
+}
+
+function onEditAgendamentos(e) {
+  const range = e.range;
+  const sheet = range.getSheet();
+  if (sheet.getName().toLowerCase() !== 'agendamentos') return;
+
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const headersRaw = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  const headers = headersRaw.map(h => String(h).toLowerCase().trim());
+  const sIdx = headers.indexOf('status');
+  if (sIdx === -1 || range.getColumn() !== sIdx + 1) return;
+
+  const val = String(range.getValue()).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+  if (val !== 'concluido') return;
+
+  const row = sheet.getRange(range.getRow(), 1, 1, sheet.getLastColumn()).getValues()[0];
+  const get = col => row[headers.indexOf(col.toLowerCase())] || '';
+
+  const rawData = get('data');
+  const dataFmt = rawData instanceof Date
+    ? Utilities.formatDate(rawData, Session.getScriptTimeZone(), 'yyyy-MM-dd')
+    : String(rawData).slice(0, 10);
+
+  let histSheet = ss.getSheetByName('Historico');
+  if (!histSheet) {
+    histSheet = ss.insertSheet('Historico');
+    histSheet.appendRow(['data', 'nome', 'whatsapp', 'servico', 'valor', 'observacoes']);
+  }
+
+  histSheet.appendRow([
+    dataFmt,
+    get('nome'),
+    get('whatsapp'),
+    get('servico'),
+    parseFloat(get('valor')) || 0,
+    get('observacoes')
+  ]);
+}
+
+function criarTriggerOnEdit() {
+  ScriptApp.getProjectTriggers()
+    .filter(t => t.getHandlerFunction() === 'onEditAgendamentos')
+    .forEach(t => ScriptApp.deleteTrigger(t));
+
+  ScriptApp.newTrigger('onEditAgendamentos')
+    .forSpreadsheet(SpreadsheetApp.getActiveSpreadsheet())
+    .onEdit()
+    .create();
+
+  Logger.log('Trigger onEdit criado para Agendamentos');
 }
 
 function json(data) {

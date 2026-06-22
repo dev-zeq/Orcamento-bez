@@ -581,6 +581,42 @@
             font-family: 'Figtree', sans-serif; margin-top: 4px;
         }
         .lock-reset:hover { color: var(--muted); }
+        /* ===== LAYOUT PC / DESKTOP ===== */
+        @media (min-width: 900px) {
+            .app { max-width: 1200px; padding: 0 0 40px 0; }
+            .topbar { padding: 18px 28px; }
+            .tab-nav { margin: 18px 18px 0; }
+            .tab-btn { padding: 13px 26px; font-size: 14.5px; }
+
+            .pc-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 14px;
+                margin: 14px 14px 0;
+            }
+            .pc-col {
+                display: flex;
+                flex-direction: column;
+                gap: 14px;
+            }
+            .pc-col .card { margin: 0 !important; }
+
+            .pc-agenda-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 14px;
+                margin: 14px 14px 0;
+            }
+            .pc-agenda-grid > .card,
+            .pc-agenda-grid > .btn-row { margin: 0 !important; }
+            .ag-buscar   { grid-column: 1; grid-row: 1; }
+            .ag-calendar { grid-column: 2; grid-row: 1; }
+            .ag-horario  { grid-column: 2; grid-row: 2; }
+            .ag-servico  { grid-column: 1; grid-row: 2; }
+            .ag-btn      { grid-column: 1 / span 2; }
+
+            .hist-lista.card { margin: 0 !important; }
+        }
     </style>
 </head>
 <body>
@@ -592,22 +628,8 @@
             <img src="Imagens/logo-bez.png" alt="Bez Clean">
         </div>
 
-        <!-- SETUP (primeira vez) -->
-        <div id="lockSetupView" style="display:none;width:100%;flex-direction:column;align-items:center;gap:20px;">
-            <div>
-                <div class="lock-title">Configurar Acesso</div>
-                <div class="lock-subtitle">Crie uma senha para proteger o CRM</div>
-            </div>
-            <div class="lock-form">
-                <input type="password" class="lock-input" id="lockSetupPass" placeholder="Nova senha" autocomplete="new-password">
-                <input type="password" class="lock-input" id="lockSetupConf" placeholder="Confirmar senha" autocomplete="new-password" onkeydown="if(event.key==='Enter')lockSetupPassword()">
-                <div class="lock-error" id="lockSetupErr"></div>
-                <button class="lock-btn" onclick="lockSetupPassword()">Criar senha</button>
-            </div>
-        </div>
-
         <!-- AUTH (usuário recorrente) -->
-        <div id="lockAuthView" style="display:none;width:100%;flex-direction:column;align-items:center;gap:14px;">
+        <div id="lockAuthView" style="display:flex;width:100%;flex-direction:column;align-items:center;gap:14px;">
             <div>
                 <div class="lock-title">Bez Clean · CRM</div>
                 <div class="lock-subtitle">🔒 Área restrita</div>
@@ -647,6 +669,8 @@
     </div>
 
     <div id="sectionOrcamento">
+    <div class="pc-grid">
+    <div class="pc-col">
     <div class="card">
         <div class="card-title">Cliente</div>
         <div class="field"><label>Nome</label><input id="clientName" type="text" placeholder="Ex: João Silva"></div>
@@ -666,7 +690,8 @@
         <div class="field"><label>Título</label><input id="promoTitle" type="text" placeholder="Ex: PROMOÇÃO ESPECIAL"></div>
         <div class="field"><label>Produto em destaque</label><input id="promoDesc" type="text" placeholder="Ex: Sofá Suede retrátil"></div>
     </div>
-
+    </div>
+    <div class="pc-col">
     <div class="card">
         <div class="card-title">Serviços <span id="loadingTag" style="font-size:10px;font-weight:400;color:var(--muted);text-transform:none;letter-spacing:0">⏳ carregando tabela...</span></div>
         <div class="field">
@@ -713,6 +738,8 @@
         </div>
     </div>
 
+    </div>
+    </div>
     <div class="btn-row">
         <button class="btn-generate" onclick="gerarPDF(false)">📄 Só PDF</button>
         <button class="btn-generate primary" onclick="gerarPDF(true)">📤 PDF + Enviar</button>
@@ -720,7 +747,8 @@
     </div><!-- /sectionOrcamento -->
 
     <div id="sectionAgenda">
-        <div class="card" style="margin-top:12px">
+    <div class="pc-agenda-grid">
+        <div class="card ag-buscar" style="margin-top:12px">
             <div class="card-title">Buscar Cliente</div>
             <div class="field ag-search-wrap">
                 <label>Nome do Cliente</label>
@@ -734,7 +762,7 @@
             <div class="field"><label>Endereço</label><input id="agEndereco" type="text" placeholder="Rua, número, bairro..."></div>
         </div>
 
-        <div class="card" style="margin-top:8px">
+        <div class="card ag-calendar" style="margin-top:8px">
             <div class="cal-header">
                 <button class="cal-nav" onclick="agMudaMes(-1)">‹</button>
                 <span id="calTitulo"></span>
@@ -748,7 +776,7 @@
             </div>
         </div>
 
-        <div class="card" id="cardHorario" style="margin-top:8px;display:none">
+        <div class="card ag-horario" id="cardHorario" style="margin-top:8px;display:none">
             <div class="card-title">Horário — <span id="agDataLabel"></span></div>
             <div class="time-grid">
                 <div class="time-slot" onclick="agSelecionarHorario(this,'08:00')">08:00</div>
@@ -762,17 +790,23 @@
             </div>
         </div>
 
-        <div class="card" style="margin-top:8px">
+        <div class="card ag-servico" style="margin-top:8px">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                <div class="field"><label>Serviço</label><input id="agServico" type="text" placeholder="Ex: Limpeza sofá 3 lugares"></div>
+                <div class="field"><label>Valor (R$)</label><input id="agValor" type="number" placeholder="0,00" min="0" step="0.01"></div>
+            </div>
             <div class="field"><label>Observações (opcional)</label><input id="agObs" type="text" placeholder="Ex: portão azul, ligar antes..."></div>
         </div>
 
-        <div class="btn-row">
+        <div class="btn-row ag-btn">
             <button class="btn-generate primary" onclick="agConfirmar()" style="width:100%">📅 Confirmar Agendamento</button>
         </div>
+    </div>
     </div><!-- /sectionAgenda -->
 
     <div id="sectionHistorico" style="display:none">
-
+    <div class="pc-grid">
+    <div class="pc-col">
       <!-- Relatório rápido -->
       <div class="card" style="margin-top:12px">
         <div class="card-title">Relatório</div>
@@ -807,8 +841,10 @@
         <div id="histMsg" style="font-size:13px;text-align:center;margin-top:8px;display:none"></div>
       </div>
 
-      <!-- Lista de atendimentos -->
-      <div class="card" style="margin-top:8px;margin-bottom:24px">
+    </div>
+    <div class="pc-col">
+    <!-- Lista de atendimentos -->
+      <div class="card hist-lista" style="margin-top:8px;margin-bottom:24px">
         <div class="card-title">Atendimentos <span id="histFiltroLabel" style="font-size:11px;font-weight:400;color:var(--muted);text-transform:none;letter-spacing:0"></span></div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
           <select id="histFiltroMes" onchange="histAplicarFiltro()" style="background:var(--input-bg);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);padding:8px 10px;font-size:13px">
@@ -827,6 +863,8 @@
         <div id="histLista"></div>
       </div>
 
+    </div>
+    </div>
     </div><!-- /sectionHistorico -->
 
 
@@ -846,38 +884,35 @@
         return;
     }
 
-    const hasPassword = localStorage.getItem('bezPassHash');
-    const hasCredId   = localStorage.getItem('bezCredId');
-
-    if (!hasPassword) {
-        _lockShowSetup();
-    } else {
-        _lockShowAuth();
-        if (hasCredId && window.PublicKeyCredential) {
-            try {
-                const avail = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
-                if (avail) {
-                    const isIOS = /iPhone|iPad/i.test(navigator.userAgent);
-                    document.getElementById('lockBioIcon').textContent  = isIOS ? '🪪' : '👆';
-                    document.getElementById('lockBioLabel').textContent = isIOS ? 'Face ID' : 'Digital / biometria';
-                    document.getElementById('lockBioDivider').style.display = '';
-                    document.getElementById('lockBioBtn').style.display     = '';
-                    setTimeout(lockBiometric, 400);
-                }
-            } catch(e) {}
+    if (!localStorage.getItem('bezPassHash')) {
+        const defaultHash = 'e0c8bc414960c21643bb13f9f6d9cb2b65db20e3d6972274425356d70eef4fd5';
+        try {
+            localStorage.setItem('bezPassHash', await _lockHash('520121'));
+        } catch(e) {
+            localStorage.setItem('bezPassHash', defaultHash);
         }
+    }
+
+    const hasCredId = localStorage.getItem('bezCredId');
+    _lockShowAuth();
+    if (hasCredId && window.PublicKeyCredential) {
+        try {
+            const avail = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+            if (avail) {
+                const isIOS = /iPhone|iPad/i.test(navigator.userAgent);
+                document.getElementById('lockBioIcon').textContent  = isIOS ? '🪪' : '👆';
+                document.getElementById('lockBioLabel').textContent = isIOS ? 'Face ID' : 'Digital / biometria';
+                document.getElementById('lockBioDivider').style.display = '';
+                document.getElementById('lockBioBtn').style.display     = '';
+                setTimeout(lockBiometric, 400);
+            }
+        } catch(e) {}
     }
 })();
 
-function _lockShowSetup() {
-    document.getElementById('lockSetupView').style.display = 'flex';
-    document.getElementById('lockAuthView').style.display  = 'none';
-    setTimeout(() => document.getElementById('lockSetupPass').focus(), 150);
-}
 
 function _lockShowAuth() {
-    document.getElementById('lockSetupView').style.display = 'none';
-    document.getElementById('lockAuthView').style.display  = 'flex';
+    document.getElementById('lockAuthView').style.display = 'flex';
     setTimeout(() => document.getElementById('lockAuthPass').focus(), 150);
 }
 
@@ -887,12 +922,6 @@ async function _lockHash(pass) {
     return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
-async function lockSetupPassword() {
-    const pass = document.getElementById('lockSetupPass').value;
-    const conf = document.getElementById('lockSetupConf').value;
-    const err  = document.getElementById('lockSetupErr');
-
-    if (pass.length < 4) { err.textContent = 'Mínimo 4 caracteres'; return; }
     if (pass !== conf)   { err.textContent = 'As senhas não coincidem'; return; }
 
     err.textContent = '';
@@ -920,7 +949,14 @@ async function lockCheckPassword() {
 
     if (!pass) { err.textContent = 'Digite a senha'; return; }
 
-    const hash = await _lockHash(pass);
+    let hash;
+    try {
+        hash = await _lockHash(pass);
+    } catch(e) {
+        const defaultHash = 'e0c8bc414960c21643bb13f9f6d9cb2b65db20e3d6972274425356d70eef4fd5';
+        hash = (pass === '520121') ? defaultHash : 'x';
+    }
+
     if (hash === localStorage.getItem('bezPassHash')) {
         err.textContent = '';
         lockGrantAccess();
@@ -985,11 +1021,11 @@ function lockGrantAccess() {
 }
 
 function lockReset() {
-    if (!confirm('Isso apagará a senha e a biometria cadastrada. Continuar?')) return;
+    if (!confirm('Isso vai redefinir a senha para a padrão e apagar a biometria. Continuar?')) return;
     localStorage.removeItem('bezPassHash');
     localStorage.removeItem('bezCredId');
     sessionStorage.removeItem('bezAuth');
-    _lockShowSetup();
+    location.reload();
 }
 /* ===== FIM AUTENTICAÇÃO ===== */
 
@@ -1825,6 +1861,8 @@ async function agConfirmar() {
     const whatsapp = document.getElementById('agWhatsapp').value.replace(/\D/g,'').replace(/^55/,'');
     const cidade   = document.getElementById('agCidade').value.trim();
     const endereco = document.getElementById('agEndereco').value.trim();
+    const servico  = document.getElementById('agServico').value.trim();
+    const valor    = parseFloat(document.getElementById('agValor').value) || 0;
     const obs      = document.getElementById('agObs').value.trim();
 
     if (!nome)     return alert('Informe o nome do cliente.');
@@ -1862,10 +1900,12 @@ async function agConfirmar() {
         await fetch(N8N_AGENDAR, {
             method:  'POST',
             headers: { 'Content-Type': 'application/json' },
-            body:    JSON.stringify({ nome, whatsapp, cidade, endereco, observacoes: obs, data: dataISO, horario: agHora, dataFormatada })
+            body:    JSON.stringify({ nome, whatsapp, cidade, endereco, servico, valor, observacoes: obs, data: dataISO, horario: agHora, dataFormatada })
         });
         agData = null; agHora = null;
-        document.getElementById('agObs').value = '';
+        document.getElementById('agServico').value = '';
+        document.getElementById('agValor').value   = '';
+        document.getElementById('agObs').value     = '';
         document.getElementById('cardHorario').style.display = 'none';
         agRenderCal();
         document.getElementById('overlay').classList.remove('show');
