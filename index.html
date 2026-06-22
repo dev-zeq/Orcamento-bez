@@ -1447,7 +1447,7 @@ function gerarPDF(enviar = false) {
 
             // Cartão
             const cxP = 14 + bW + 8;
-            const parcela = total / 3;
+            const parcela = (total * 1.14) / 3;
             fill([241, 250, 255]); stroke(C.cyan); lw(0.5);
             doc.roundedRect(cxP, y, bW, 28, 3, 3, 'FD');
             fill(C.cyan);
