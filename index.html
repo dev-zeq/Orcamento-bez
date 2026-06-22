@@ -922,27 +922,6 @@ async function _lockHash(pass) {
     return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
-    if (pass !== conf)   { err.textContent = 'As senhas não coincidem'; return; }
-
-    err.textContent = '';
-    localStorage.setItem('bezPassHash', await _lockHash(pass));
-
-    if (window.PublicKeyCredential) {
-        try {
-            const avail = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
-            if (avail) {
-                const isIOS = /iPhone|iPad/i.test(navigator.userAgent);
-                const label = isIOS ? 'Face ID' : 'impressão digital';
-                if (confirm(`Deseja habilitar autenticação por ${label} para entradas futuras?`)) {
-                    await _lockRegisterBiometric();
-                    return;
-                }
-            }
-        } catch(e) {}
-    }
-    lockGrantAccess();
-}
-
 async function lockCheckPassword() {
     const pass = document.getElementById('lockAuthPass').value;
     const err  = document.getElementById('lockAuthErr');
