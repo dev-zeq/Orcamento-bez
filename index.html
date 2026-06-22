@@ -1400,13 +1400,13 @@ function gerarPDF(enviar = false) {
                 txt(fmt(subtotal), W - 15, y + 5.8, { align: 'right' });
                 y += 8.5;
 
-                fill([255, 246, 245]); stroke(C.red); lw(0.3);
+                fill([245, 248, 252]); stroke(C.border); lw(0.3);
                 doc.rect(14, y, W - 28, 8.5, 'FD');
-                fill(C.red); doc.rect(14, y, 2.5, 8.5, 'F');
-                normal(); size(8.5); color(C.red);
+                fill(C.muted); doc.rect(14, y, 2.5, 8.5, 'F');
+                normal(); size(8.5); color(C.muted);
                 txt('Desconto', 20, y + 5.8);
-                bold();
-                txt('− ' + fmt(discount), W - 15, y + 5.8, { align: 'right' });
+                bold(); color(C.text);
+                txt('− ' + fmt(discount), W - 18, y + 5.8, { align: 'right' });
                 y += 8.5;
             }
 
@@ -1447,8 +1447,7 @@ function gerarPDF(enviar = false) {
 
             // Cartão
             const cxP = 14 + bW + 8;
-            const totalCard = total * 1.14;
-            const parcela = totalCard / 3;
+            const parcela = total / 3;
             fill([241, 250, 255]); stroke(C.cyan); lw(0.5);
             doc.roundedRect(cxP, y, bW, 28, 3, 3, 'FD');
             fill(C.cyan);
@@ -1456,12 +1455,8 @@ function gerarPDF(enviar = false) {
             doc.rect(cxP, y + 4.5, bW, 2, 'F');
             color(C.white); bold(); size(7.5);
             txt('CARTÃO DE CRÉDITO', cxP + bW/2, y + 4.8, { align: 'center' });
-            color(C.cyan); bold(); size(14);
-            txt('3× de ' + fmt(parcela), cxP + bW/2, y + 17, { align: 'center' });
-            color(C.muted); normal(); size(7.5);
-            txt(fmt(totalCard) + ' no total (c/ juros)', cxP + bW/2, y + 23, { align: 'center' });
-            size(7);
-            txt('via maquininha', cxP + bW/2, y + 27, { align: 'center' });
+            color(C.cyan); bold(); size(17);
+            txt('3× de ' + fmt(parcela), cxP + bW/2, y + 20, { align: 'center' });
             y += 34;
 
             // ─── FOOTER ───────────────────────────────────
