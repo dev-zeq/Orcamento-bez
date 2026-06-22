@@ -643,6 +643,7 @@
     <div class="tab-nav">
         <button class="tab-btn active" id="tabOrc" onclick="switchTab('orc')">📄 Orçamento</button>
         <button class="tab-btn" id="tabAg" onclick="switchTab('ag')">📅 Agenda</button>
+        <button class="tab-btn" id="tabHist" onclick="switchTab('hist')">📊 Histórico</button>
     </div>
 
     <div id="sectionOrcamento">
@@ -769,6 +770,64 @@
             <button class="btn-generate primary" onclick="agConfirmar()" style="width:100%">📅 Confirmar Agendamento</button>
         </div>
     </div><!-- /sectionAgenda -->
+
+    <div id="sectionHistorico" style="display:none">
+
+      <!-- Relatório rápido -->
+      <div class="card" style="margin-top:12px">
+        <div class="card-title">Relatório</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:4px">
+          <div style="background:var(--surface-2);border-radius:var(--radius-sm);padding:14px 16px">
+            <div style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:6px">Este mês</div>
+            <div id="histValorMes" style="font-size:1.5rem;font-weight:700;color:var(--cyan)">R$ 0</div>
+            <div id="histQtdMes" style="font-size:11px;color:var(--muted);margin-top:2px">0 atendimentos</div>
+          </div>
+          <div style="background:var(--surface-2);border-radius:var(--radius-sm);padding:14px 16px">
+            <div style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:6px">Este ano</div>
+            <div id="histValorAno" style="font-size:1.5rem;font-weight:700;color:var(--teal)">R$ 0</div>
+            <div id="histQtdAno" style="font-size:11px;color:var(--muted);margin-top:2px">0 atendimentos</div>
+          </div>
+        </div>
+        <div id="histTopServicos" style="margin-top:10px;font-size:12px;color:var(--text-soft)"></div>
+      </div>
+
+      <!-- Lançar atendimento -->
+      <div class="card" style="margin-top:8px">
+        <div class="card-title">Lançar Atendimento</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="field"><label>Data</label><input id="histData" type="date"></div>
+          <div class="field"><label>Valor cobrado (R$)</label><input id="histValor" type="number" placeholder="0,00" min="0" step="0.01"></div>
+        </div>
+        <div class="field"><label>Cliente</label><input id="histNome" type="text" placeholder="Nome do cliente"></div>
+        <div class="field"><label>Serviço realizado</label><input id="histServico" type="text" placeholder="Ex: Limpeza de sofá 3 lugares"></div>
+        <div class="field"><label>Observações (opcional)</label><input id="histObs" type="text" placeholder="Alguma anotação..."></div>
+        <div class="btn-row" style="margin-top:8px">
+          <button class="btn-generate primary" onclick="histSalvar()" style="width:100%">✅ Salvar Atendimento</button>
+        </div>
+        <div id="histMsg" style="font-size:13px;text-align:center;margin-top:8px;display:none"></div>
+      </div>
+
+      <!-- Lista de atendimentos -->
+      <div class="card" style="margin-top:8px;margin-bottom:24px">
+        <div class="card-title">Atendimentos <span id="histFiltroLabel" style="font-size:11px;font-weight:400;color:var(--muted);text-transform:none;letter-spacing:0"></span></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+          <select id="histFiltroMes" onchange="histAplicarFiltro()" style="background:var(--input-bg);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);padding:8px 10px;font-size:13px">
+            <option value="">Todos os meses</option>
+            <option value="1">Janeiro</option><option value="2">Fevereiro</option>
+            <option value="3">Março</option><option value="4">Abril</option>
+            <option value="5">Maio</option><option value="6">Junho</option>
+            <option value="7">Julho</option><option value="8">Agosto</option>
+            <option value="9">Setembro</option><option value="10">Outubro</option>
+            <option value="11">Novembro</option><option value="12">Dezembro</option>
+          </select>
+          <select id="histFiltroAno" onchange="histAplicarFiltro()" style="background:var(--input-bg);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);padding:8px 10px;font-size:13px">
+            <option value="">Todos os anos</option>
+          </select>
+        </div>
+        <div id="histLista"></div>
+      </div>
+
+    </div><!-- /sectionHistorico -->
 
 
 </div>
@@ -1501,11 +1560,159 @@ let agData = null;
 let agHora = null;
 
 function switchTab(tab) {
-    document.getElementById('sectionOrcamento').style.display = (tab === 'orc') ? 'block' : 'none';
-    document.getElementById('sectionAgenda').style.display    = (tab === 'ag')  ? 'block' : 'none';
-    document.getElementById('tabOrc').classList.toggle('active', tab === 'orc');
-    document.getElementById('tabAg').classList.toggle('active',  tab === 'ag');
-    if (tab === 'ag') agRenderCal();
+    document.getElementById('sectionOrcamento').style.display  = (tab === 'orc')  ? 'block' : 'none';
+    document.getElementById('sectionAgenda').style.display     = (tab === 'ag')   ? 'block' : 'none';
+    document.getElementById('sectionHistorico').style.display  = (tab === 'hist') ? 'block' : 'none';
+    document.getElementById('tabOrc').classList.toggle('active',  tab === 'orc');
+    document.getElementById('tabAg').classList.toggle('active',   tab === 'ag');
+    document.getElementById('tabHist').classList.toggle('active', tab === 'hist');
+    if (tab === 'ag')   agRenderCal();
+    if (tab === 'hist') histCarregar();
+}
+
+// ---- Histórico ----
+let histDados = [];
+
+async function histCarregar() {
+    try {
+        const r = await fetch(`${SHEETS_URL}?action=historico`);
+        histDados = await r.json();
+        if (!Array.isArray(histDados)) histDados = [];
+        histPopularFiltroAnos();
+        histAplicarFiltro();
+    } catch(e) {
+        document.getElementById('histLista').innerHTML = '<p style="color:var(--muted);font-size:13px;text-align:center;padding:20px">Erro ao carregar histórico.</p>';
+    }
+}
+
+function histPopularFiltroAnos() {
+    const anos = [...new Set(histDados.map(h => {
+        const d = h.data ? new Date(h.data) : null;
+        return d && !isNaN(d) ? d.getFullYear() : null;
+    }).filter(Boolean))].sort((a,b) => b - a);
+    const sel = document.getElementById('histFiltroAno');
+    const cur = sel.value;
+    sel.innerHTML = '<option value="">Todos os anos</option>';
+    anos.forEach(a => { const o = document.createElement('option'); o.value = a; o.textContent = a; sel.appendChild(o); });
+    sel.value = cur;
+}
+
+function histAplicarFiltro() {
+    const mes = parseInt(document.getElementById('histFiltroMes').value) || 0;
+    const ano = parseInt(document.getElementById('histFiltroAno').value) || 0;
+    const filtrados = histDados.filter(h => {
+        const d = h.data ? new Date(h.data) : null;
+        if (!d || isNaN(d)) return false;
+        if (mes && d.getMonth() + 1 !== mes) return false;
+        if (ano && d.getFullYear() !== ano) return false;
+        return true;
+    });
+    histRenderRelatorio(filtrados);
+    histRenderLista(filtrados);
+}
+
+function histRenderRelatorio(dados) {
+    const agora = new Date();
+    const meAtual = agora.getMonth() + 1;
+    const anoAtual = agora.getFullYear();
+
+    const doMes = histDados.filter(h => {
+        const d = new Date(h.data);
+        return !isNaN(d) && d.getMonth()+1 === meAtual && d.getFullYear() === anoAtual;
+    });
+    const doAno = histDados.filter(h => {
+        const d = new Date(h.data);
+        return !isNaN(d) && d.getFullYear() === anoAtual;
+    });
+
+    const somaFmt = arr => 'R$ ' + arr.reduce((s,h) => s + (parseFloat(h.valor)||0), 0)
+        .toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+
+    document.getElementById('histValorMes').textContent = somaFmt(doMes);
+    document.getElementById('histQtdMes').textContent   = doMes.length + ' atendimento' + (doMes.length !== 1 ? 's' : '');
+    document.getElementById('histValorAno').textContent = somaFmt(doAno);
+    document.getElementById('histQtdAno').textContent   = doAno.length + ' atendimento' + (doAno.length !== 1 ? 's' : '');
+
+    // Top serviços (baseado nos dados filtrados)
+    const contagem = {};
+    dados.forEach(h => { if (h.servico) contagem[h.servico] = (contagem[h.servico] || 0) + 1; });
+    const top = Object.entries(contagem).sort((a,b) => b[1]-a[1]).slice(0,3);
+    const el = document.getElementById('histTopServicos');
+    if (top.length) {
+        el.innerHTML = '<div style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:6px">Top serviços no período</div>'
+            + top.map(([ s, n ], i) =>
+                `<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border)">
+                    <span>${['🥇','🥈','🥉'][i]} ${s}</span>
+                    <span style="color:var(--muted)">${n}x</span>
+                </div>`
+            ).join('');
+    } else {
+        el.innerHTML = '';
+    }
+}
+
+function histRenderLista(dados) {
+    const el = document.getElementById('histLista');
+    if (!dados.length) {
+        el.innerHTML = '<p style="color:var(--muted);font-size:13px;text-align:center;padding:20px">Nenhum atendimento encontrado.</p>';
+        return;
+    }
+    el.innerHTML = dados.map(h => {
+        const d = h.data ? new Date(h.data) : null;
+        const dataFmt = d && !isNaN(d) ? d.toLocaleDateString('pt-BR') : '—';
+        const valor = parseFloat(h.valor) || 0;
+        const valorFmt = valor ? 'R$ ' + valor.toLocaleString('pt-BR', {minimumFractionDigits:2}) : '—';
+        return `<div style="display:flex;flex-direction:column;gap:3px;padding:12px 0;border-bottom:1px solid var(--border)">
+            <div style="display:flex;justify-content:space-between;align-items:baseline">
+                <span style="font-weight:600;font-size:14px">${h.nome || '—'}</span>
+                <span style="color:var(--cyan);font-weight:700;font-size:14px">${valorFmt}</span>
+            </div>
+            <div style="font-size:12px;color:var(--text-soft)">${h.servico || '—'}</div>
+            <div style="font-size:11px;color:var(--muted)">${dataFmt}${h.observacoes ? ' · ' + h.observacoes : ''}</div>
+        </div>`;
+    }).join('');
+}
+
+async function histSalvar() {
+    const data     = document.getElementById('histData').value;
+    const nome     = document.getElementById('histNome').value.trim();
+    const servico  = document.getElementById('histServico').value.trim();
+    const valor    = document.getElementById('histValor').value;
+    const obs      = document.getElementById('histObs').value.trim();
+    const msg      = document.getElementById('histMsg');
+
+    if (!data || !nome || !servico || !valor) {
+        msg.style.display = 'block';
+        msg.style.color = 'var(--red)';
+        msg.textContent = 'Preencha data, cliente, serviço e valor.';
+        return;
+    }
+
+    msg.style.display = 'block';
+    msg.style.color = 'var(--muted)';
+    msg.textContent = '⏳ Salvando...';
+
+    try {
+        const r = await fetch(SHEETS_URL, {
+            method: 'POST',
+            body: JSON.stringify({ action: 'historico', data, nome, servico, valor: parseFloat(valor), observacoes: obs })
+        });
+        const res = await r.json();
+        if (res.ok) {
+            msg.style.color = 'var(--green)';
+            msg.textContent = '✅ Atendimento salvo!';
+            document.getElementById('histNome').value    = '';
+            document.getElementById('histServico').value = '';
+            document.getElementById('histValor').value   = '';
+            document.getElementById('histObs').value     = '';
+            histCarregar();
+        } else {
+            throw new Error('Erro ao salvar');
+        }
+    } catch(e) {
+        msg.style.color = 'var(--red)';
+        msg.textContent = '❌ Erro ao salvar. Tente novamente.';
+    }
 }
 
 // ---- Busca de cliente ----
@@ -1674,6 +1881,14 @@ async function agConfirmar() {
         alert('Erro ao agendar: ' + err.message);
     }
 }
+
+// Inicializa data do histórico com hoje
+(function() {
+    const hoje = new Date();
+    const iso = hoje.getFullYear() + '-' + String(hoje.getMonth()+1).padStart(2,'0') + '-' + String(hoje.getDate()).padStart(2,'0');
+    const el = document.getElementById('histData');
+    if (el) el.value = iso;
+})();
 </script>
 </body>
 </html>

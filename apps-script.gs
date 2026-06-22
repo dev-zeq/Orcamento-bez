@@ -78,6 +78,18 @@ function doGet(e) {
     return json(results);
   }
 
+  if (action === 'historico') {
+    const sheet = ss.getSheetByName("Historico");
+    if (!sheet || sheet.getLastRow() < 2) return json([]);
+    const rows = sheet.getDataRange().getValues();
+    const headers = rows.shift();
+    return json(rows.map(row => {
+      const obj = {};
+      headers.forEach((h, i) => obj[h] = row[i]);
+      return obj;
+    }).reverse());
+  }
+
   return json({ erro: 'Acao invalida' });
 }
 
@@ -139,6 +151,23 @@ function doPost(e) {
       );
     } catch(e) { Logger.log('Calendar error: ' + e); }
 
+    return json({ ok: true });
+  }
+
+  if (action === 'historico') {
+    let sheet = ss.getSheetByName("Historico");
+    if (!sheet) {
+      sheet = ss.insertSheet("Historico");
+      sheet.appendRow(["data", "nome", "whatsapp", "servico", "valor", "observacoes"]);
+    }
+    sheet.appendRow([
+      data.data ? new Date(data.data + 'T12:00:00') : new Date(),
+      data.nome || '',
+      data.whatsapp || '',
+      data.servico || '',
+      parseFloat(data.valor) || 0,
+      data.observacoes || ''
+    ]);
     return json({ ok: true });
   }
 
